@@ -9,6 +9,7 @@ const routeGuard = (accessMatrix) => {
         return res.status(403).json({ error: 'No group claim found!' });
       }
     } else {
+      // Check for group IDs
       const groups = req.authInfo['groups'];
 
       if (req.path.includes(accessMatrix.todolist.path)) {
@@ -35,7 +36,6 @@ const routeGuard = (accessMatrix) => {
         return res.status(403).json({ error: 'Unrecognized path' });
       }
     }
-
     next();
   };
 };

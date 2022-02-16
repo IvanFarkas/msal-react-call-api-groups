@@ -101,3 +101,7 @@ export const securityGroups = {
   GroupMember: memberGroupOid,
   GroupAdmin: adminGroupOid,
 };
+
+console.log(msalConfig);
+console.log(protectedResources);
+console.log(securityGroups);
