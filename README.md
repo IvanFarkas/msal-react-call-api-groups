@@ -64,16 +64,14 @@ or download and extract the repository .zip file.
 ### Step 2. Install Node.js API dependencies
 
 ```console
-    cd msal-react-call-api-groups
-    cd 5-AccessControl/2-call-api-groups/API
+    cd API
     npm install
 ```
 
 ### Step 3. Install React SPA dependencies
 
 ```console
-    cd ../
-    cd SPA
+    cd ../SPA
     npm install
 ```
 
