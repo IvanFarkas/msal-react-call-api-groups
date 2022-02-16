@@ -1,0 +1,44 @@
+{
+  "name": "msal-react-call-api-groups",
+  "version": "1.0.0",
+  "description": "A Node.js & Express web API accepting authorized calls with Azure Active Directory",
+  "author": "Ivan Farkas",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IvanFarkas/msal-react-call-api-groups.git"
+  },
+  "keywords": [
+    "azure-ad",
+    "ms-identity",
+    "node",
+    "api"
+  ],
+  "bugs": {
+    "url": "https://github.com/IvanFarkas/msal-react-call-api-groups/issues"
+  },
+  "homepage": "https://github.com/IvanFarkas/msal-react#readme",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest --forceExit",
+    "fix": "prettier -w \"./**/*.{js,jsx,json,ts,tsx}\""
+  },
+  "dependencies": {
+    "@azure/msal-node": "^1.6.0",
+    "axios": "^0.26.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.2",
+    "dotenv": "^16.0.0",
+    "lowdb": "^1.0.0",
+    "morgan": "^1.10.0",
+    "passport": "^0.5.2",
+    "passport-azure-ad": "^4.3.1"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.5.1",
+    "supertest": "^6.2.2"
+  }
+}
