@@ -474,111 +474,140 @@ To do this, we are using [MSAL Node](https://github.com/AzureAD/microsoft-authen
 
 ```javascript
 const msalConfig = {
-    auth: {
-        clientId: config.credentials.clientID,
-        authority: `https://${config.metadata.authority}/${config.credentials.tenantID}`,
-        clientSecret: config.credentials.clientSecret
+  auth: {
+    clientId: config.credentials.clientID,
+    authority: `https://${config.metadata.authority}/${config.credentials.tenantID}`,
+    clientSecret: config.credentials.clientSecret,
+  },
+  system: {
+    loggerOptions: {
+      loggerCallback(loglevel, message, containsPii) {
+        console.log(message);
+      },
+      piiLoggingEnabled: false,
+      logLevel: msal.LogLevel.Info,
     },
-    system: {
-        loggerOptions: {
-            loggerCallback(loglevel, message, containsPii) {
-                console.log(message);
-            },
-            piiLoggingEnabled: false,
-            logLevel: msal.LogLevel.Info,
-        }
-    }
+  },
 };
 
 // Create msal application object
 const cca = new msal.ConfidentialClientApplication(msalConfig);
-
 const getOboToken = async (oboAssertion) => {
-    const oboRequest = {
-        oboAssertion: oboAssertion,
-        scopes: config.protectedResources.graphAPI.scopes,
-    }
+  const oboRequest = {
+    oboAssertion: oboAssertion,
+    scopes: config.protectedResources.graphAPI.scopes,
+  };
 
-    try {
-        const response = await cca.acquireTokenOnBehalfOf(oboRequest);
-        return response.accessToken;
-    } catch (error) {
-        console.log(error);
-        return error;
-    }
-}
+  try {
+    const response = await cca.acquireTokenOnBehalfOf(oboRequest);
+
+    return response.accessToken;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
 
 const callGraph = async (oboToken, endpoint) => {
+  const options = {
+    headers: {
+      Authorization: `Bearer ${oboToken}`,
+    },
+  };
 
-    const options = {
-        headers: {
-            Authorization: `Bearer ${oboToken}`
-        }
-    };
+  console.log('request made to web API at: ' + new Date().toString());
 
-    console.log('request made to web API at: ' + new Date().toString());
+  try {
+    const response = await axios.default.get(endpoint, options);
 
-    try {
-        const response = await axios.default.get(endpoint, options);
-        return response.data;
-    } catch (error) {
-        console.log(error)
-        return error;
-    }
-}
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
 
 const handlePagination = async (oboToken, nextPage, userGroups) => {
+  try {
+    const graphResponse = await callGraph(oboToken, nextPage);
 
-    try {
-        const graphResponse = await callGraph(oboToken, nextPage);
-
-        graphResponse.value.map((v) => userGroups.push(v.id));
-
-        if (graphResponse['@odata.nextLink']) {
-            return await handlePagination(accessToken, graphResponse['@odata.nextLink'], userGroups)
-        } else {
-            return userGroups
-        }
-    } catch (error) {
-        console.log(error);
+    graphResponse.value.map((v) => userGroups.push(v.id));
+    if (graphResponse['@odata.nextLink']) {
+      return await handlePagination(oboToken, graphResponse['@odata.nextLink'], userGroups);
+    } else {
+      return userGroups;
     }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-}
+const checkAccess = (req, res, next) => {
+  const accessMatrix = config.accessMatrix;
+  const groups = res.locals.groups;
+
+  if (req.path.includes(accessMatrix.todolist.path)) {
+    if (accessMatrix.todolist.methods.includes(req.method)) {
+      let intersection = accessMatrix.todolist.groups.filter((group) => groups.includes(group));
+
+      if (intersection.length < 1) {
+        return res.status(403).json({ error: 'User does not have the group' });
+      } else {
+        return next();
+      }
+    } else {
+      return res.status(403).json({ error: 'Method not allowed' });
+    }
+  } else if (req.path.includes(accessMatrix.dashboard.path)) {
+    if (accessMatrix.dashboard.methods.includes(req.method)) {
+      let intersection = accessMatrix.dashboard.groups.filter((group) => groups.includes(group));
+
+      if (intersection.length < 1) {
+        return res.status(403).json({ error: 'User does not have the group' });
+      } else {
+        return next();
+      }
+    } else {
+      return res.status(403).json({ error: 'Method not allowed' });
+    }
+  } else {
+    return res.status(403).json({ error: 'Unrecognized path' });
+  }
+};
 
 const handleOverage = async (req, res, next) => {
-    console.log('going through overage');
-    const authHeader = req.headers.authorization;
-    const accessToken = authHeader.split(' ')[1]
+  console.log('going through overage');
 
-    const userGroups = [];
+  const authHeader = req.headers.authorization;
+  const accessToken = authHeader.split(' ')[1];
+  const userGroups = [];
 
-    try {
-        const oboToken = await getOboToken(accessToken);
-        const graphResponse = await callGraph(oboToken, config.protectedResources.graphAPI.endpoint);
+  try {
+    const oboToken = await getOboToken(accessToken);
+    const graphResponse = await callGraph(oboToken, config.protectedResources.graphAPI.endpoint);
 
-        /**
-         * Some queries against Microsoft Graph return multiple pages of data either due to server-side paging 
-         * or due to the use of the $top query parameter to specifically limit the page size in a request. 
-         * When a result set spans multiple pages, Microsoft Graph returns an @odata.nextLink property in 
-         * the response that contains a URL to the next page of results. Learn more at https://docs.microsoft.com/graph/paging
-         */
-        if (graphResponse['@odata.nextLink']) {
-            graphResponse.value.map((v) => userGroups.push(v.id));
+    /**
+     * Some queries against Microsoft Graph return multiple pages of data either due to server-side paging or due to the use of the $top query parameter to specifically limit the page size in a request.
+     * When a result set spans multiple pages, Microsoft Graph returns an @odata.nextLink property in the response that contains a URL to the next page of results.
+     * Learn more at https://docs.microsoft.com/graph/paging
+     */
+    if (graphResponse['@odata.nextLink']) {
+      graphResponse.value.map((v) => userGroups.push(v.id));
 
-            try {
-                res.locals.groups = await handlePagination(oboToken, graphResponse['@odata.nextLink'], userGroups);
-                return checkAccess(req, res, next);
-            } catch (error) {
-                console.log(error);
-            }
-        } else {
-            res.locals.groups = graphResponse.value.map((v) => v.id);
-            return checkAccess(req, res, next);
-        }
-    } catch (error) {
+      try {
+        res.locals.groups = await handlePagination(oboToken, graphResponse['@odata.nextLink'], userGroups);
+        return checkAccess(req, res, next);
+      } catch (error) {
         console.log(error);
+      }
+    } else {
+      res.locals.groups = graphResponse.value.map((v) => v.id);
+      return checkAccess(req, res, next);
     }
-}
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 module.exports = handleOverage;
 ```
@@ -602,19 +631,3 @@ module.exports = handleOverage;
 - [Use MSAL.js to work with Azure AD B2C](https://docs.microsoft.com/azure/active-directory/develop/msal-b2c-overview)
 
 For more information about how OAuth 2.0 protocols work in this scenario and other scenarios, see [Authentication Scenarios for Azure AD](https://docs.microsoft.com/azure/active-directory/develop/authentication-flows-app-scenarios).
-
-## Community Help and Support
-
-Use [Stack Overflow](http://stackoverflow.com/questions/tagged/msal) to get support from the community.
-Ask your questions on Stack Overflow first and browse existing issues to see if someone has asked your question before.
-Make sure that your questions or comments are tagged with [`azure-active-directory` `node` `ms-identity` `adal` `msal`].
-
-If you find a bug in the sample, raise the issue on [GitHub Issues](../../../../issues).
-
-To provide feedback on or suggest features for Azure Active Directory, visit [User Voice page](https://feedback.azure.com/forums/169401-azure-active-directory).
-
-## Contributing
-
-If you'd like to contribute to this sample, see [CONTRIBUTING.MD](/CONTRIBUTING.md).
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information, see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
