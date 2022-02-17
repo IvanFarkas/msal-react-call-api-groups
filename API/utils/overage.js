@@ -9,11 +9,6 @@ config.credentials.clientSecret = process.env.API_CLIENT_SECRET;
 config.accessMatrix.todolist.groups = [process.env.API_GROUPMEMBER_GROUP_OID, process.env.API_GROUPADMIN_GROUP_OID];
 config.accessMatrix.dashboard.groups = [process.env.API_GROUPADMIN_GROUP_OID];
 
-// console.log(config);
-// console.log(config.protectedResources.graphAPI.scopes);
-// console.log(config.accessMatrix.todolist.groups);
-// console.log(config.accessMatrix.dashboard.groups);
-
 const msalConfig = {
   auth: {
     clientId: config.credentials.clientID,
@@ -44,7 +39,7 @@ const getOboToken = async (oboAssertion) => {
 
     return response.accessToken;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return error;
   }
 };
@@ -56,14 +51,14 @@ const callGraph = async (oboToken, endpoint) => {
     },
   };
 
-  console.log('request made to web API at: ' + new Date().toString());
+  console.log(`request made to web API at: ${new Date().toString()}`);
 
   try {
     const response = await axios.default.get(endpoint, options);
 
     return response.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return error;
   }
 };
@@ -79,7 +74,7 @@ const handlePagination = async (oboToken, nextPage, userGroups) => {
       return userGroups;
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -139,14 +134,14 @@ const handleOverage = async (req, res, next) => {
         res.locals.groups = await handlePagination(oboToken, graphResponse['@odata.nextLink'], userGroups);
         return checkAccess(req, res, next);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     } else {
       res.locals.groups = graphResponse.value.map((v) => v.id);
       return checkAccess(req, res, next);
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 

@@ -501,7 +501,7 @@ const getOboToken = async (oboAssertion) => {
 
     return response.accessToken;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return error;
   }
 };
@@ -520,7 +520,7 @@ const callGraph = async (oboToken, endpoint) => {
 
     return response.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return error;
   }
 };
@@ -536,7 +536,7 @@ const handlePagination = async (oboToken, nextPage, userGroups) => {
       return userGroups;
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -596,14 +596,14 @@ const handleOverage = async (req, res, next) => {
         res.locals.groups = await handlePagination(oboToken, graphResponse['@odata.nextLink'], userGroups);
         return checkAccess(req, res, next);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     } else {
       res.locals.groups = graphResponse.value.map((v) => v.id);
       return checkAccess(req, res, next);
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 

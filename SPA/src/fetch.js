@@ -13,6 +13,9 @@ const getToken = async (scopes) => {
     scopes: scopes,
   });
 
+  // View JWT issued by AAD: https://jwt.ms
+  console.log('accessToken:', response.accessToken);
+
   return response.accessToken;
 };
 
@@ -30,7 +33,7 @@ export const getTasks = async () => {
 
   return fetch(protectedResources.apiTodoList.todoListEndpoint, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };
 
 export const getTask = async (id) => {
@@ -47,7 +50,7 @@ export const getTask = async (id) => {
 
   return fetch(protectedResources.apiTodoList.todoListEndpoint + `/${id}`, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };
 
 export const postTask = async (task) => {
@@ -66,7 +69,7 @@ export const postTask = async (task) => {
 
   return fetch(protectedResources.apiTodoList.todoListEndpoint, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };
 
 export const deleteTask = async (id) => {
@@ -83,7 +86,7 @@ export const deleteTask = async (id) => {
 
   return fetch(protectedResources.apiTodoList.todoListEndpoint + `/${id}`, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };
 
 export const editTask = async (id, task) => {
@@ -102,7 +105,7 @@ export const editTask = async (id, task) => {
 
   return fetch(protectedResources.apiTodoList.todoListEndpoint + `/${id}`, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };
 
 export const getAllTasks = async () => {
@@ -119,7 +122,7 @@ export const getAllTasks = async () => {
 
   return fetch(protectedResources.apiTodoList.dashboardEndpoint, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };
 
 export const getGroups = async () => {
@@ -136,7 +139,7 @@ export const getGroups = async () => {
 
   return fetch(protectedResources.apiGraph.endpoint, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };
 
 export const getNextPage = async (nextPage) => {
@@ -153,5 +156,5 @@ export const getNextPage = async (nextPage) => {
 
   return fetch(nextPage, options)
     .then((response) => response.json())
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));
 };

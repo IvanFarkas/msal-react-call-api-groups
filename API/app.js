@@ -14,11 +14,6 @@ config.credentials.clientSecret = process.env.API_CLIENT_SECRET;
 config.accessMatrix.todolist.groups = [process.env.API_GROUPMEMBER_GROUP_OID, process.env.API_GROUPADMIN_GROUP_OID];
 config.accessMatrix.dashboard.groups = [process.env.API_GROUPADMIN_GROUP_OID];
 
-// console.log(config);
-// console.log(config.protectedResources.graphAPI.scopes);
-// console.log(config.accessMatrix.todolist.groups);
-// console.log(config.accessMatrix.dashboard.groups);
-
 const options = {
   identityMetadata: `https://${config.metadata.authority}/${config.credentials.tenantID}/${config.metadata.version}/${config.metadata.discovery}`,
   issuer: `https://${config.metadata.authority}/${config.credentials.tenantID}/${config.metadata.version}`,
