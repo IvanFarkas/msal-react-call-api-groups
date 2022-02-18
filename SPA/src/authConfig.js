@@ -19,10 +19,6 @@ const redirectUri = process.env.REACT_APP_REDIRECT_URI; // Redirect_Uri
 // APP ID URI of the web API project that you've registered e.g. api://xxxxxx/access_as_user
 const webApiScope = process.env.REACT_APP_WEB_API_SCOPE; // Web_Api_Scope
 
-// The instance of the Microsoft Graph API the application should communicate with.
-// For the global Microsoft Graph API endpoint: https://graph.microsoft.com.
-const graphMeEndpoint = process.env.REACT_APP_GRAPH_ME_ENDPOINT; // Graph_Endpoint_1.0
-
 const memberGroupOid = process.env.REACT_APP_GROUPMEMBER_GROUP_OID;
 const adminGroupOid = process.env.REACT_APP_GROUPADMIN_GROUP_OID;
 
